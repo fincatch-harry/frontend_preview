@@ -21,6 +21,39 @@
                     <i class="fas fa-search"></i>
                 </button>
             </div>
+            <button id="filterToggleBtn" class="btn filter-btn" aria-expanded="false">
+                <i class="fas fa-filter"></i> Filters
+            </button>
+        </div>
+        
+        <div class="filter-panel hidden" id="filterPanel">
+            <div class="container">
+                <div class="filter-section">
+                    <h3>Keywords</h3>
+                    <div id="keywordFilters" class="filter-options">
+                        <!-- Keywords will be dynamically added here -->
+                    </div>
+                </div>
+                
+                <div class="filter-section">
+                    <h3>Time Range</h3>
+                    <div class="date-range">
+                        <div class="date-input">
+                            <label for="startDate">From:</label>
+                            <input type="date" id="startDate">
+                        </div>
+                        <div class="date-input">
+                            <label for="endDate">To:</label>
+                            <input type="date" id="endDate">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="filter-actions">
+                    <button id="applyFiltersBtn" class="btn primary-btn">Apply Filters</button>
+                    <button id="resetFiltersBtn" class="btn secondary-btn">Reset Filters</button>
+                </div>
+            </div>
         </div>
     </header>
 
