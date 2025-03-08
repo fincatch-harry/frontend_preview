@@ -8,6 +8,12 @@
 // Global state variables
 let allThreads = [];
 let currentThread = null;
+let uniqueKeywords = new Set();
+let activeFilters = {
+    keywords: [],
+    startDate: null,
+    endDate: null
+};
 
 // DOM Elements
 const loadingElement = document.getElementById('loading');
@@ -19,6 +25,15 @@ const backButton = document.getElementById('backButton');
 const searchInput = document.getElementById('searchInput');
 const searchButton = document.getElementById('searchButton');
 const currentYearElement = document.getElementById('currentYear');
+
+// Filter Elements
+const filterToggleBtn = document.getElementById('filterToggleBtn');
+const filterPanel = document.getElementById('filterPanel');
+const keywordFilters = document.getElementById('keywordFilters');
+const startDateInput = document.getElementById('startDate');
+const endDateInput = document.getElementById('endDate');
+const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+const resetFiltersBtn = document.getElementById('resetFiltersBtn');
 
 // Templates
 const threadCardTemplate = document.getElementById('threadCardTemplate');
@@ -51,6 +66,12 @@ async function loadThreadData() {
         const data = await response.json();
         allThreads = data;
         
+        // Extract unique keywords for filter
+        extractUniqueKeywords();
+        
+        // Initialize filters
+        initializeFilters();
+        
         // Render all threads initially
         renderThreads(allThreads);
     } catch (error) {
@@ -59,6 +80,49 @@ async function loadThreadData() {
     } finally {
         hideLoading();
     }
+}
+
+/**
+ * Extract unique keywords from threads
+ */
+function extractUniqueKeywords() {
+    uniqueKeywords.clear();
+    
+    allThreads.forEach(thread => {
+        if (thread.keyword) {
+            uniqueKeywords.add(thread.keyword);
+        }
+    });
+}
+
+/**
+ * Initialize filter components
+ */
+function initializeFilters() {
+    // Clear existing keyword filters
+    keywordFilters.innerHTML = '';
+    
+    // Add keyword chips
+    uniqueKeywords.forEach(keyword => {
+        const keywordChip = document.createElement('div');
+        keywordChip.className = 'keyword-chip';
+        keywordChip.setAttribute('data-keyword', keyword);
+        keywordChip.textContent = keyword;
+        
+        keywordChip.addEventListener('click', () => {
+            keywordChip.classList.toggle('selected');
+        });
+        
+        keywordFilters.appendChild(keywordChip);
+    });
+    
+    // Set date inputs to cover last month by default
+    const today = new Date();
+    const lastMonth = new Date(today);
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    
+    startDateInput.valueAsDate = lastMonth;
+    endDateInput.valueAsDate = today;
 }
 
 /**
@@ -76,10 +140,23 @@ function setupEventListeners() {
         }
     });
     
+    // Filter toggle
+    filterToggleBtn.addEventListener('click', toggleFilterPanel);
+    
+    // Apply filters
+    applyFiltersBtn.addEventListener('click', applyFilters);
+    
+    // Reset filters
+    resetFiltersBtn.addEventListener('click', resetFilters);
+    
     // Handle keyboard navigation
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && !threadsElement.classList.contains('hidden')) {
-            showThreadsView();
+        if (event.key === 'Escape') {
+            if (filterPanel && !filterPanel.classList.contains('hidden')) {
+                toggleFilterPanel();
+            } else if (!threadsElement.classList.contains('hidden')) {
+                showThreadsView();
+            }
         }
     });
 }
@@ -241,36 +318,13 @@ function showThreadsView() {
 }
 
 /**
- * Perform search based on input value
+ * Perform search based on input value and active filters
  */
 function performSearch() {
     const searchTerm = searchInput.value.trim().toLowerCase();
     
-    if (searchTerm === '') {
-        // If search is empty, show all threads
-        renderThreads(allThreads);
-        return;
-    }
-    
-    // Filter threads based on search term
-    const filteredThreads = allThreads.filter(thread => {
-        // Search in title, keyword, username
-        if (thread.post_title.toLowerCase().includes(searchTerm) ||
-            thread.keyword.toLowerCase().includes(searchTerm) ||
-            thread.username.toLowerCase().includes(searchTerm)) {
-            return true;
-        }
-        
-        // Search in replies
-        if (thread.replies && thread.replies.length > 0) {
-            return thread.replies.some(reply => 
-                reply.reply.toLowerCase().includes(searchTerm) ||
-                (reply.user && reply.user.toLowerCase().includes(searchTerm))
-            );
-        }
-        
-        return false;
-    });
+    // Apply all filters and search
+    const filteredThreads = filterThreads(searchTerm);
     
     renderThreads(filteredThreads);
     
@@ -278,6 +332,134 @@ function performSearch() {
     if (filteredThreads.length === 0) {
         showNoResults();
     }
+}
+
+/**
+ * Filter threads based on search term and active filters
+ * @param {string} searchTerm - Search term to filter by
+ * @returns {Array} - Filtered threads array
+ */
+function filterThreads(searchTerm = '') {
+    return allThreads.filter(thread => {
+        // Check search term if provided
+        if (searchTerm !== '') {
+            const matchesSearch = 
+                thread.post_title.toLowerCase().includes(searchTerm) ||
+                thread.keyword.toLowerCase().includes(searchTerm) ||
+                thread.username.toLowerCase().includes(searchTerm) ||
+                (thread.replies && thread.replies.some(reply => 
+                    reply.reply.toLowerCase().includes(searchTerm) ||
+                    (reply.user && reply.user.toLowerCase().includes(searchTerm))
+                ));
+                
+            if (!matchesSearch) return false;
+        }
+        
+        // Check keyword filter
+        if (activeFilters.keywords.length > 0 && !activeFilters.keywords.includes(thread.keyword)) {
+            return false;
+        }
+        
+        // Check date range if we have valid dates and thread has replies
+        if (activeFilters.startDate && activeFilters.endDate && thread.replies && thread.replies.length > 0) {
+            // Try to find at least one reply that falls within the date range
+            const hasReplyInDateRange = thread.replies.some(reply => {
+                if (!reply.time) return false;
+                
+                // Parse date from format like "2024年5月7日 21:24:39"
+                const dateParts = reply.time.match(/(\d{4})年(\d{1,2})月(\d{1,2})日\s+(\d{1,2}):(\d{1,2}):(\d{1,2})/);
+                
+                if (!dateParts) return false;
+                
+                const replyDate = new Date(
+                    parseInt(dateParts[1]), // Year
+                    parseInt(dateParts[2]) - 1, // Month (0-indexed)
+                    parseInt(dateParts[3]), // Day
+                    parseInt(dateParts[4]), // Hour
+                    parseInt(dateParts[5]), // Minute
+                    parseInt(dateParts[6])  // Second
+                );
+                
+                return replyDate >= activeFilters.startDate && replyDate <= activeFilters.endDate;
+            });
+            
+            if (!hasReplyInDateRange) return false;
+        }
+        
+        // Thread passed all filters
+        return true;
+    });
+}
+
+/**
+ * Toggle filter panel visibility
+ */
+function toggleFilterPanel() {
+    filterPanel.classList.toggle('hidden');
+    
+    // Update button state
+    if (filterPanel.classList.contains('hidden')) {
+        filterToggleBtn.setAttribute('aria-expanded', 'false');
+        filterToggleBtn.classList.remove('active');
+    } else {
+        filterToggleBtn.setAttribute('aria-expanded', 'true');
+        filterToggleBtn.classList.add('active');
+    }
+}
+
+/**
+ * Apply selected filters
+ */
+function applyFilters() {
+    // Get selected keywords
+    const selectedKeywords = Array.from(document.querySelectorAll('.keyword-chip.selected'))
+        .map(chip => chip.getAttribute('data-keyword'));
+    
+    // Get date range
+    const startDate = startDateInput.valueAsDate;
+    const endDate = endDateInput.valueAsDate;
+    
+    // Set end date to end of day
+    if (endDate) {
+        endDate.setHours(23, 59, 59, 999);
+    }
+    
+    // Update active filters
+    activeFilters = {
+        keywords: selectedKeywords,
+        startDate: startDate,
+        endDate: endDate
+    };
+    
+    // Apply filters and search
+    performSearch();
+    
+    // Close filter panel
+    toggleFilterPanel();
+}
+
+/**
+ * Reset all filters
+ */
+function resetFilters() {
+    // Clear keyword selections
+    document.querySelectorAll('.keyword-chip.selected').forEach(chip => {
+        chip.classList.remove('selected');
+    });
+    
+    // Reset date inputs
+    startDateInput.value = '';
+    endDateInput.value = '';
+    
+    // Clear active filters
+    activeFilters = {
+        keywords: [],
+        startDate: null,
+        endDate: null
+    };
+    
+    // Show all threads
+    renderThreads(allThreads);
 }
 
 /**
