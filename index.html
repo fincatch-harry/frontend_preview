@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A responsive website displaying thread discussion data">
+    <title>Thread Viewer</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Preload the data file to improve performance -->
+    <link rel="preload" href="data.json" as="fetch" crossorigin>
+    <!-- Font Awesome for icons (loaded via CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Thread Viewer</h1>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search threads...">
+                <button id="searchButton" aria-label="Search">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section id="loading" aria-live="polite">
+            <div class="loading-spinner"></div>
+            <p>Loading threads...</p>
+        </section>
+
+        <section id="threads" class="hidden">
+            <!-- Thread cards will be dynamically inserted here -->
+        </section>
+
+        <section id="threadDetail" class="hidden">
+            <button id="backButton" class="btn" aria-label="Back to threads">
+                <i class="fas fa-arrow-left"></i> Back to threads
+            </button>
+            <div id="threadContent">
+                <!-- Thread details will be dynamically inserted here -->
+            </div>
+        </section>
+
+        <div id="noResults" class="hidden">
+            <p>No threads found matching your search.</p>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; <span id="currentYear"></span> Thread Viewer. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Thread card template -->
+    <template id="threadCardTemplate">
+        <article class="thread-card">
+            <h2 class="thread-title"></h2>
+            <div class="thread-meta">
+                <span class="thread-number"></span>
+                <span class="thread-keyword"></span>
+                <span class="thread-username"></span>
+            </div>
+            <div class="thread-preview"></div>
+            <button class="view-thread-btn">View Full Thread</button>
+        </article>
+    </template>
+
+    <!-- Reply template -->
+    <template id="replyTemplate">
+        <div class="reply">
+            <div class="reply-header">
+                <span class="reply-user"></span>
+                <span class="reply-time"></span>
+            </div>
+            <div class="reply-content"></div>
+        </div>
+    </template>
+
+    <script src="main.js"></script>
+</body>
+</html>
