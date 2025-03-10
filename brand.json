@@ -1,0 +1,44 @@
+{
+    "brand_insights": [
+        {
+            "brand_name": "IQOS",
+            "characteristics": "Heated tobacco device manufactured by Philip Morris; multiple models including IQOS 2.4 and IQOS 3 MULTI",
+            "main_discussion_points": "Legal status, regulatory challenges, regional availability, pricing trends",
+            "insight": "High market interest despite regulatory barriers; significant discussion around cross-border availability",
+            "sentiment": "Mixed - advocacy for legalization versus support for bans",
+            "reasoning": "Emerges as most prominent brand in discussions, with extensive debate around FDA approval, early market entry in Japan/Italy, and modified risk status. Significant user engagement regarding legal status and regional availability indicates strong market interest despite regulatory challenges."
+        },
+        {
+            "brand_name": "Marlboro (萬寶路/萬保路)",
+            "characteristics": "Premium cigarette brand; expanding into heated tobacco products through Philip Morris",
+            "main_discussion_points": "Price increases in Hong Kong, retail availability, stockpiling behavior",
+            "insight": "Strong market presence with price-sensitive consumer base; brand associated with wealth status",
+            "sentiment": "Mixed - brand prestige balanced against price concerns",
+            "reasoning": "Dominant brand in discussions with significant focus on price increases and retail availability. Consumer behavior (stockpiling) and wealth associations suggest strong brand value despite price sensitivity."
+        },
+        {
+            "brand_name": "Seven Stars (七星)",
+            "characteristics": "Japanese cigarette brand with notable menthol variants",
+            "main_discussion_points": "Product quality, regional availability differences, specific menthol variants",
+            "insight": "Perceived as superior quality compared to competitors; strong demand for Japanese variants",
+            "sentiment": "Positive, particularly regarding Japanese versions",
+            "reasoning": "Consistently discussed as superior quality product, particularly Japanese variants. Strong interest in specific products like '七星menthol 12號' indicates dedicated consumer base."
+        },
+        {
+            "brand_name": "Mevius (formerly Mild Seven)",
+            "characteristics": "Japanese tobacco brand with diverse flavored varieties",
+            "main_discussion_points": "Flavored variants (lemon, blueberry), purchasing locations, authenticity",
+            "insight": "Strong consumer interest in specialty flavored versions",
+            "sentiment": "Positive, particularly regarding flavored variants",
+            "reasoning": "Active consumer interest in flavored varieties and purchasing locations suggests strong market demand for specialty products."
+        },
+        {
+            "brand_name": "Kent",
+            "characteristics": "British American Tobacco Co. brand with multiple variants",
+            "main_discussion_points": "Brand variants, availability",
+            "insight": "Dedicated consumer base seeking specific product information",
+            "sentiment": "Neutral to positive",
+            "reasoning": "Consistent discussion of different variants and availability suggests established market presence with dedicated consumer interest."
+        }
+    ]
+}
